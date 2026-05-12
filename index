@@ -1,1 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gran Feria del Auto Usado</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #e11d48;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        header h1 { margin: 0; font-size: 2.5rem; }
+        header p { margin: 0.5rem 0 0 0; font-size: 1.2rem; color: #cbd5e1; }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Sección del Formulario Admin */
+        .admin-panel {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--accent);
+        }
+
+        .admin-panel h2 { margin-top: 0; color: var(--primary); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #be123c; }
+
+        /* Grid de Autos */
+        .catalogo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .car-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .car-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #e2e8f0;
+        }
+
+        .car-info {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .car-title {
+            font-size: 1.3rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--primary);
+        }
+
+        .car-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .car-details {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .badge {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Gran Feria del Auto Usado</h1>
+        <p>Encuentra tu próximo vehículo al mejor precio</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="admin-panel">
+            <h2>Pedir / Cargar Nuevo Vehículo</h2>
+            <form id="carForm">
+                <div class="form-grid">
+                    <div>
+                        <label>Marca y Modelo</label>
+                        <input type="text" id="modelo" placeholder="Ej. Toyota Corolla" required>
+                    </div>
+                    <div>
+                        <label>Año</label>
+                        <input type="number" id="anio" placeholder="Ej. 2018" required>
+                    </div>
+                    <div>
+                        <label>Precio (USD o $)</label>
+                        <input type="text" id="precio" placeholder="Ej. $12,500" required>
+                    </div>
+                    <div>
+                        <label>Kilometraje</label>
+                        <input type="text" id="km" placeholder="Ej. 85,000 km" required>
+                    </div>
+                    <div>
+                        <label>Foto del Auto (URL o Local)</label>
+                        <input type="file" id="fotoFile" accept="image/*" required>
+                    </div>
+                </div>
+                <button type="submit">Agregar al Catálogo</button>
+            </form>
+        </div>
+
+        <h2>Vehículos Disponibles</h2>
+        <div class="catalogo" id="listaAutos">
+            </div>
+    </div>
+
+    <script>
+        const carForm = document.getElementById('carForm');
+        const listaAutos = document.getElementById('listaAutos');
+
+        // Cargar autos guardados previamente en el navegador al iniciar
+        document.addEventListener('DOMContentLoaded', mostrarAutos);
+
+        carForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const modelo = document.getElementById('modelo').value;
+            const anio = document.getElementById('anio').value;
+            const precio = document.getElementById('precio').value;
+            const km = document.getElementById('km').value;
+            const fotoInput = document.getElementById('fotoFile');
+
+            const file = fotoInput.files[0];
+            const reader = new FileReader();
+
+            // Convierte la imagen cargada localmente a un formato de texto almacenable (Base64)
+            reader.onloadend = function() {
+                const nuevoAuto = {
+                    modelo,
+                    anio,
+                    precio,
+                    km,
+                    foto: reader.result
+                };
+
+                let autos = JSON.parse(localStorage.getItem('autos')) || [];
+                autos.push(nuevoAuto);
+                localStorage.setItem('autos', JSON.stringify(autos));
+
+                carForm.reset();
+                mostrarAutos();
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function mostrarAutos() {
+            listaAutos.innerHTML = '';
+            const autos = JSON.parse(localStorage.getItem('autos')) || [];
+
+            if(autos.length === 0) {
+                listaAutos.innerHTML = '<p style="color: #64748b;">No hay autos cargados en este momento.</p>';
+                return;
+            }
+
+            autos.forEach(auto => {
+                const card = document.createElement('div');
+                card.className = 'car-card';
+                card.innerHTML = `
+                    <img src="${auto.foto}" class="car-img" alt="${auto.modelo}">
+                    <div class="car-info">
+                        <h3 class="car-title">${auto.modelo}</h3>
+                        <div class="car-price">${auto.precio}</div>
+                        <div class="car-details">
+                            <span class="badge">Año: ${auto.anio}</span>
+                            <span class="badge">${auto.km}</span>
+                        </div>
+                    </div>
+                `;
+                listaAutos.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
